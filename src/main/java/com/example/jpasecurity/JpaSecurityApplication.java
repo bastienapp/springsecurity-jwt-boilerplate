@@ -10,6 +10,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Set;
@@ -22,9 +23,9 @@ public class JpaSecurityApplication {
     }
 
     @Bean
-    CommandLineRunner commandLineRunner(PostRepository posts, UserRepository users, RoleRepository roles,
-                                        PasswordEncoder encoder) {
+    CommandLineRunner commandLineRunner(PostRepository posts, UserRepository users, RoleRepository roles) {
         return args -> {
+            PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
             Role roleUser = roles.save(new Role("USER"));
             Role roleAdmin = roles.save(new Role("ADMIN"));
             users.save(new User("user@example.com", encoder.encode("password"), Set.of(new Role[]{roleUser})));
