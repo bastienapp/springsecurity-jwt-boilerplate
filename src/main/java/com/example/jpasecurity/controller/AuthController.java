@@ -22,7 +22,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String token(@RequestBody LoginDto login) throws AuthenticationException {
+    public String signIn(@RequestBody LoginDto login) throws AuthenticationException {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(login.getEmail(), login.getPassword()));
         return tokenService.generateToken(authentication);
