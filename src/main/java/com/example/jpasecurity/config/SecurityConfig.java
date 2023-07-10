@@ -13,7 +13,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,28 +32,16 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+// enable usage of role in endpoints, with @PreAuthorize("hasAuthority('SCOPE_ROLENAME')")
 @EnableMethodSecurity
 public class SecurityConfig {
 
     private final JpaUserDetailsService userDetailsService;
     @Value("${jwt.secret}")
     public String jwtSecret;
-    @Value("${frontend.url}")
-    public String frontendUrl;
 
     public SecurityConfig(JpaUserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
-    }
-
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(frontendUrl));
-        configuration.setAllowedMethods(List.of("GET", "POST"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
     }
 
     @Bean
@@ -66,7 +53,7 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf(csrf -> csrf.disable())
+                .csrf((csrf) -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
@@ -74,8 +61,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsService)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
+                .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
                 .build();
     }
 
